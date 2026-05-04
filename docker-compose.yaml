@@ -1,0 +1,14 @@
+services:
+  minimax-audio-studio:
+    build: .
+    container_name: minimax-audio-studio
+    restart: unless-stopped
+    ports:
+      - "5175:5175"
+    environment:
+      - NODE_ENV=production
+      - PORT=5175
+      - MINIMAX_BASE_URL=https://api.minimaxi.com
+    volumes:
+      - ./data:/app/data
+      - ./data/minimax-studio.sqlite:/app/minimax-studio.sqlite

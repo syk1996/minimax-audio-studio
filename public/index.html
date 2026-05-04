@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiniMax Audio Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Long+Cang&family=Ma+Shan+Zheng&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#music" aria-label="MiniMax Audio Studio 首页">
+        <span class="brand-mark">M</span>
+        <span>MiniMax Audio Studio</span>
+      </a>
+      <nav class="nav-tabs" aria-label="主导航">
+        <button class="nav-tab active" data-page="music" type="button"><span aria-hidden="true">&#127925;</span> 音乐生成</button>
+        <button class="nav-tab" data-page="music-cover" type="button"><span aria-hidden="true">&#127925;</span> 翻唱生成</button>
+        <button class="nav-tab" data-page="image" type="button"><span aria-hidden="true">&#128247;</span> 图片生成</button>
+        <button class="nav-tab" data-page="voice" type="button"><span aria-hidden="true">&#127897;&#65039;</span> 音色克隆</button>
+        <button class="nav-tab" data-page="speech" type="button"><span aria-hidden="true">&#128266;</span> 语音合成</button>
+        <button class="nav-tab" data-page="records" type="button"><span aria-hidden="true">&#128220;</span> 记录管理</button>
+        <button class="nav-tab" data-page="settings" type="button"><span aria-hidden="true">&#9881;&#65039;</span> 设置</button>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow hero-eyebrow">音乐生成 · 翻唱创作 · 音色克隆 · 语音合成 一体化创意工具</p>
+      </section>
+
+      <section id="page-music" class="page active" data-page-panel="music">
+        <form id="music-form" class="panel wide-panel">
+          <div class="panel-heading">
+            <p>Music Generation</p>
+            <h2>音乐生成</h2>
+          </div>
+
+          <div class="assistant-box">
+            <div class="assistant-title">
+              <span>Lyrics Assistant</span>
+              <strong>AI 生成歌词</strong>
+            </div>
+            <div class="inline-fields two-columns">
+              <label>生成模式
+                <select name="lyrics_mode">
+                  <option value="write_full_song">写完整歌曲</option>
+                  <option value="edit">编辑/续写现有歌词</option>
+                </select>
+              </label>
+              <label>歌名（可选）
+                <input name="lyrics_title" type="text" maxlength="120" placeholder="例如：夏夜来信，不填将自动生成" />
+              </label>
+            </div>
+            <label>歌词创作指令（必填）
+              <textarea name="lyrics_prompt" rows="3" maxlength="2000" placeholder="例如：写一首关于离别后重新出发的中文流行歌，副歌要有记忆点" required></textarea>
+              <span class="field-hint">用于 AI 生成歌词，描述歌曲主题和情感</span>
+            </label>
+            <button id="generate-lyrics" class="secondary-button" type="button">生成歌词（自动填入下方）</button>
+            <div id="lyrics-result" class="result compact-result" aria-live="polite"></div>
+          </div>
+
+          <div class="inline-fields two-columns">
+            <label>模型
+              <select name="model">
+                <option value="music-2.6">music-2.6</option>
+                <option value="music-2.6-free">music-2.6-free</option>
+              </select>
+            </label>
+            <label>输出格式
+              <select name="format">
+                <option value="mp3">mp3</option>
+                <option value="wav">wav</option>
+                <option value="pcm">pcm</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="editor-grid">
+            <label>歌曲描述
+              <textarea name="prompt" rows="4" maxlength="2000" placeholder="例如：流行摇滚，明亮，适合夏夜公路旅行" required></textarea>
+            </label>
+            <label>歌词
+              <textarea name="lyrics" rows="8" maxlength="3500" placeholder="[Verse]\n海风吹过旧码头\n[Chorus]\n我们追着光往前走"></textarea>
+            </label>
+          </div>
+
+          <div class="inline-fields">
+            <label>采样率
+              <select name="sample_rate">
+                <option value="44100">44100</option>
+                <option value="32000">32000</option>
+                <option value="24000">24000</option>
+                <option value="16000">16000</option>
+              </select>
+            </label>
+            <label>比特率
+              <select name="bitrate">
+                <option value="256000">256000</option>
+                <option value="128000">128000</option>
+                <option value="64000">64000</option>
+                <option value="32000">32000</option>
+              </select>
+            </label>
+            <div class="checks block-checks">
+              <label><input type="checkbox" name="is_instrumental" /> 纯音乐</label>
+              <label><input type="checkbox" name="aigc_watermark" /> 添加音频水印</label>
+            </div>
+          </div>
+
+          <button type="submit">生成音乐并保存</button>
+          <div id="music-result" class="result" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section id="page-music-cover" class="page" data-page-panel="music-cover">
+        <form id="music-cover-form" class="panel wide-panel">
+          <div class="panel-heading">
+            <p>Music Cover</p>
+            <h2>翻唱生成</h2>
+          </div>
+
+          <div class="form-section">
+            <h3>生成模式</h3>
+            <div class="checks block-checks">
+              <label>
+                <input type="radio" name="cover_mode" value="one-step" checked />
+                <strong>一步翻唱（快捷模式）</strong>
+                <span class="field-hint">直接传入参考音频和风格描述，自动提取歌词</span>
+              </label>
+              <label>
+                <input type="radio" name="cover_mode" value="two-step" />
+                <strong>两步翻唱（进阶模式）</strong>
+                <span class="field-hint">先提取歌词，可修改后再生成翻唱</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>参考音频</h3>
+            <div class="checks block-checks">
+              <label>
+                <input type="radio" name="audio_input_mode" value="url" checked />
+                <strong>使用音频 URL</strong>
+              </label>
+              <label>
+                <input type="radio" name="audio_input_mode" value="file" />
+                <strong>上传音频文件</strong>
+                <span class="field-hint">支持 mp3/wav/flac 格式，6 秒 -6 分钟，最大 50MB</span>
+              </label>
+            </div>
+            <div id="audio-url-input">
+              <label>音频 URL（必填）
+                <input name="audio_url" type="url" placeholder="https://example.com/original-song.mp3" />
+                <span class="field-hint">提供在线音频链接</span>
+              </label>
+            </div>
+            <div id="audio-file-input" style="display: none;">
+              <label>选择音频文件（必填）
+                <input name="audio_file" type="file" accept="audio/mp3,audio/mpeg,audio/wav,audio/flac" />
+                <span class="field-hint">文件将被转换为 base64 编码后上传</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section" id="cover-lyrics-section" style="display: none;">
+            <h3>歌词编辑</h3>
+            <label>提取的歌词（可编辑）
+              <textarea name="cover_lyrics" rows="10" maxlength="3500" placeholder="点击「提取音频特征」后，歌词将自动填充到这里..."></textarea>
+              <span class="field-hint">可修改歌词内容，然后点击生成翻唱</span>
+            </label>
+            <button id="extract-features" class="secondary-button" type="button">提取音频特征（免费）</button>
+            <div id="extract-result" class="result compact-result" aria-live="polite"></div>
+          </div>
+
+          <div class="form-section">
+            <h3>翻唱风格</h3>
+            <label>风格描述（必填）
+              <textarea name="cover_prompt" rows="3" maxlength="2000" placeholder="例如：爵士风格，慵懒深夜酒吧，萨克斯&#10;或：摇滚版，激情澎湃，电吉他独奏" required></textarea>
+              <span class="field-hint">描述翻唱的音乐风格、情绪和乐器</span>
+            </label>
+          </div>
+
+          <div class="inline-fields two-columns">
+            <label>输出格式
+              <select name="cover_format">
+                <option value="mp3">mp3</option>
+                <option value="wav">wav</option>
+                <option value="pcm">pcm</option>
+              </select>
+            </label>
+            <label>采样率
+              <select name="cover_sample_rate">
+                <option value="44100">44100</option>
+                <option value="32000">32000</option>
+                <option value="24000">24000</option>
+                <option value="16000">16000</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="inline-fields">
+            <label>比特率
+              <select name="cover_bitrate">
+                <option value="256000">256000</option>
+                <option value="128000">128000</option>
+                <option value="64000">64000</option>
+                <option value="32000">32000</option>
+              </select>
+            </label>
+            <div class="checks block-checks">
+              <label><input type="checkbox" name="cover_aigc_watermark" /> 添加音频水印</label>
+            </div>
+          </div>
+
+          <input type="hidden" name="cover_feature_id" value="" />
+          <button type="submit" id="cover-generate-btn">生成翻唱</button>
+          <div id="music-cover-result" class="result" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section id="page-image" class="page" data-page-panel="image">
+        <div class="image-gen-layout">
+          <form id="image-form" class="panel wide-panel">
+            <div class="panel-heading">
+              <p>Image Generation</p>
+              <h2>图片生成</h2>
+            </div>
+
+            <div class="checks block-checks">
+              <label><input type="radio" name="image_mode" value="t2i" checked /> 文生图</label>
+              <label><input type="radio" name="image_mode" value="i2i" /> 图生图（人物参考）</label>
+            </div>
+
+            <div id="image-reference" style="display: none;">
+              <label>参考图片（图生图必填）
+                <input name="reference_file" type="file" accept="image/jpeg,image/jpg,image/png" />
+                <span class="field-hint">支持 JPG/JPEG/PNG，建议单人正面照，大小小于 10MB</span>
+              </label>
+            </div>
+
+            <label>提示词（必填）
+              <textarea name="prompt" rows="4" maxlength="1500" placeholder="例如：一个站在海边的女孩，电影感光影，胶片质感" required></textarea>
+            </label>
+
+            <div class="inline-fields two-columns">
+              <label>模型
+                <select name="model">
+                  <option value="image-01">image-01</option>
+                  <option value="image-01-live">image-01-live</option>
+                </select>
+              </label>
+              <label>宽高比
+                <select name="aspect_ratio">
+                  <option value="1:1">1:1</option>
+                  <option value="16:9">16:9</option>
+                  <option value="4:3">4:3</option>
+                  <option value="3:2">3:2</option>
+                  <option value="2:3">2:3</option>
+                  <option value="3:4">3:4</option>
+                  <option value="9:16">9:16</option>
+                  <option value="21:9">21:9</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="image-style-section" style="display: none;">
+              <div class="inline-fields two-columns">
+                <label>画风风格
+                  <select name="style_type">
+                    <option value="">不设置</option>
+                    <option value="漫画">漫画</option>
+                    <option value="元气">元气</option>
+                    <option value="中世纪">中世纪</option>
+                    <option value="水彩">水彩</option>
+                  </select>
+                </label>
+                <label>画风权重
+                  <input name="style_weight" type="number" min="0.1" max="1" step="0.1" value="0.8" placeholder="0.8" />
+                  <span class="field-hint">取值范围 (0, 1]，默认 0.8</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="inline-fields">
+              <label>生成数量
+                <select name="n">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </label>
+              <div class="checks block-checks">
+                <label><input type="checkbox" name="aigc_watermark" /> 添加图片水印</label>
+              </div>
+            </div>
+
+            <button type="submit">生成图片并保存</button>
+            <div id="image-result" class="result" aria-live="polite"></div>
+          </form>
+
+          <aside class="image-preview-panel">
+            <div class="preview-header">
+              <h3>生成预览</h3>
+              <span class="preview-hint">生成的图片将在此处显示</span>
+            </div>
+            <div id="image-preview-grid" class="preview-grid">
+              <div class="preview-placeholder">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span>填写参数后点击生成</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="page-voice" class="page" data-page-panel="voice">
+        <form id="voice-form" class="panel wide-panel accent-panel">
+          <div class="panel-heading">
+            <p>Voice Cloning</p>
+            <h2>音色克隆</h2>
+          </div>
+          <label>复刻音频
+            <input name="file" type="file" accept="audio/mp3,audio/mpeg,audio/m4a,audio/wav,audio/x-wav" required />
+            <span class="field-hint">格式：mp3/m4a/wav，时长 10 秒 -5 分钟，大小≤20MB</span>
+          </label>
+          <div class="inline-fields two-columns">
+            <label>自定义 Voice ID
+              <input name="voice_id" type="text" minlength="8" maxlength="256" pattern="[A-Za-z][A-Za-z0-9_-]*[A-Za-z0-9]" placeholder="MiniMaxVoice01" required />
+              <span class="field-hint">长度 8-256，首字符为字母，末位不为 - 或 _</span>
+            </label>
+            <label>试听模型
+              <select name="model">
+                <option value="speech-2.8-hd">speech-2.8-hd</option>
+                <option value="speech-2.8-turbo">speech-2.8-turbo</option>
+                <option value="speech-2.6-hd">speech-2.6-hd</option>
+                <option value="speech-2.6-turbo">speech-2.6-turbo</option>
+                <option value="speech-02-hd">speech-02-hd</option>
+                <option value="speech-02-turbo">speech-02-turbo</option>
+              </select>
+              <span class="field-hint" style="visibility: hidden;">占位</span>
+            </label>
+          </div>
+          <div class="voice-input-wrapper">
+            <label class="voice-textarea-label">试听文本（可选）
+              <textarea name="text" rows="5" maxlength="1000" placeholder="填写后会返回试听音频。支持语气词标签，例如：今天是不是很开心呀 (laughs)，当然了！"></textarea>
+            </label>
+            <div class="speech-helper">
+              <div class="assistant-title speech-helper-title">
+                <span>Speech Tokens</span>
+                <strong>语气词快捷插入</strong>
+              </div>
+              <p class="helper-copy">点击中文标签会在当前光标位置插入对应英文语气词</p>
+              <div id="voice-token-buttons" class="token-grid" aria-label="语气词快捷插入按钮"></div>
+            </div>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" name="need_noise_reduction" /> 降噪</label>
+            <label><input type="checkbox" name="need_volume_normalization" /> 音量归一化</label>
+            <label><input type="checkbox" name="aigc_watermark" /> 试听水印</label>
+          </div>
+          <button type="submit">上传并克隆</button>
+          <div id="voice-result" class="result" aria-live="polite"></div>
+          <div id="voice-demo-container" class="demo-container" style="display: none;">
+            <div class="demo-title">试听克隆音色</div>
+            <audio id="voice-demo-audio" controls style="display: none;"></audio>
+            <button id="voice-demo-play" class="secondary-button" type="button" style="display: none;">播放试听</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="page-speech" class="page" data-page-panel="speech">
+        <form id="speech-form" class="panel wide-panel">
+          <div class="panel-heading">
+            <p>Text to Audio</p>
+            <h2>语音合成</h2>
+          </div>
+          <div class="speech-input-wrapper">
+            <label class="compact-textarea speech-textarea">合成文本
+              <textarea name="text" rows="10" maxlength="10000" placeholder="输入要转换为语音的文本。支持换行和停顿标记，例如 &lt;#0.8#&gt;。" required></textarea>
+            </label>
+            <div class="speech-helper">
+              <div class="assistant-title speech-helper-title">
+                <span>Speech Tokens</span>
+                <strong>语气词快捷插入</strong>
+              </div>
+              <p class="helper-copy">点击中文标签会在当前光标位置插入对应英文语气词，例如：今天是不是很开心呀 (laughs)，当然了！</p>
+              <div id="speech-token-buttons" class="token-grid" aria-label="语气词快捷插入按钮"></div>
+            </div>
+          </div>
+            <p class="helper-copy">点击中文标签会在当前光标位置插入对应英文语气词，例如：今天是不是很开心呀(laughs)，当然了！</p>
+              <div id="speech-token-buttons" class="token-grid" aria-label="语气词快捷插入按钮"></div>
+            </div>
+          </div>
+          <div class="inline-fields">
+            <label>模型
+              <select name="model">
+                <option value="speech-2.8-hd">speech-2.8-hd</option>
+                <option value="speech-2.8-turbo">speech-2.8-turbo</option>
+                <option value="speech-2.6-hd">speech-2.6-hd</option>
+                <option value="speech-2.6-turbo">speech-2.6-turbo</option>
+                <option value="speech-02-hd">speech-02-hd</option>
+                <option value="speech-02-turbo">speech-02-turbo</option>
+              </select>
+            </label>
+            <label>Voice ID
+              <select name="voice_id" required>
+                <option value="Chinese (Mandarin)_Lyrical_Voice">中文 (普通话) - 抒情男声</option>
+                <option value="male-qn-qingse">中文 (普通话) - 青涩青年音色</option>
+                <option value="male-qn-jingying">中文 (普通话) - 精英青年音色</option>
+                <option value="male-qn-badao">中文 (普通话) - 霸道青年音色</option>
+                <option value="male-qn-daxuesheng">中文 (普通话) - 青年大学生音色</option>
+                <option value="female-shaonv">中文 (普通话) - 少女音色</option>
+                <option value="female-yujie">中文 (普通话) - 御姐音色</option>
+                <option value="female-chengshu">中文 (普通话) - 成熟女性音色</option>
+                <option value="female-tianmei">中文 (普通话) - 甜美女性音色</option>
+                <option value="male-qn-qingse-jingpin">中文 (普通话) - 青涩青年音色-beta</option>
+                <option value="male-qn-jingying-jingpin">中文 (普通话) - 精英青年音色-beta</option>
+                <option value="male-qn-badao-jingpin">中文 (普通话) - 霸道青年音色-beta</option>
+                <option value="male-qn-daxuesheng-jingpin">中文 (普通话) - 青年大学生音色-beta</option>
+                <option value="female-shaonv-jingpin">中文 (普通话) - 少女音色-beta</option>
+                <option value="female-yujie-jingpin">中文 (普通话) - 御姐音色-beta</option>
+                <option value="female-chengshu-jingpin">中文 (普通话) - 成熟女性音色-beta</option>
+                <option value="female-tianmei-jingpin">中文 (普通话) - 甜美女性音色-beta</option>
+                <option value="clever_boy">中文 (普通话) - 聪明男童</option>
+                <option value="cute_boy">中文 (普通话) - 可爱男童</option>
+                <option value="lovely_girl">中文 (普通话) - 萌萌女童</option>
+                <option value="cartoon_pig">中文 (普通话) - 卡通猪小琪</option>
+                <option value="bingjiao_didi">中文 (普通话) - 病娇弟弟</option>
+                <option value="junlang_nanyou">中文 (普通话) - 俊朗男友</option>
+                <option value="chunzhen_xuedi">中文 (普通话) - 纯真学弟</option>
+                <option value="lengdan_xiongzhang">中文 (普通话) - 冷淡学长</option>
+                <option value="badao_shaoye">中文 (普通话) - 霸道少爷</option>
+                <option value="tianxin_xiaoling">中文 (普通话) - 甜心小玲</option>
+                <option value="qiaopi_mengmei">中文 (普通话) - 俏皮萌妹</option>
+                <option value="wumei_yujie">中文 (普通话) - 妩媚御姐</option>
+                <option value="diadia_xuemei">中文 (普通话) - 嗲嗲学妹</option>
+                <option value="danya_xuejie">中文 (普通话) - 淡雅学姐</option>
+                <option value="Chinese (Mandarin)_Reliable_Executive">中文 (普通话) - 沉稳高管</option>
+                <option value="Chinese (Mandarin)_News_Anchor">中文 (普通话) - 新闻女声</option>
+                <option value="Chinese (Mandarin)_Mature_Woman">中文 (普通话) - 傲娇御姐</option>
+                <option value="Chinese (Mandarin)_Unrestrained_Young_Man">中文 (普通话) - 不羁青年</option>
+                <option value="Arrogant_Miss">中文 (普通话) - 嚣张小姐</option>
+                <option value="Robot_Armor">中文 (普通话) - 机械战甲</option>
+                <option value="Chinese (Mandarin)_Kind-hearted_Antie">中文 (普通话) - 热心大婶</option>
+                <option value="Chinese (Mandarin)_HK_Flight_Attendant">中文 (普通话) - 港普空姐</option>
+                <option value="Chinese (Mandarin)_Humorous_Elder">中文 (普通话) - 搞笑大爷</option>
+                <option value="Chinese (Mandarin)_Gentleman">中文 (普通话) - 温润男声</option>
+                <option value="Chinese (Mandarin)_Warm_Bestie">中文 (普通话) - 温暖闺蜜</option>
+                <option value="Chinese (Mandarin)_Male_Announcer">中文 (普通话) - 播报男声</option>
+                <option value="Chinese (Mandarin)_Sweet_Lady">中文 (普通话) - 甜美女声</option>
+                <option value="Chinese (Mandarin)_Southern_Young_Man">中文 (普通话) - 南方小哥</option>
+                <option value="Chinese (Mandarin)_Wise_Women">中文 (普通话) - 阅历姐姐</option>
+                <option value="Chinese (Mandarin)_Gentle_Youth">中文 (普通话) - 温润青年</option>
+                <option value="Chinese (Mandarin)_Warm_Girl">中文 (普通话) - 温暖少女</option>
+                <option value="Chinese (Mandarin)_Kind-hearted_Elder">中文 (普通话) - 花甲奶奶</option>
+                <option value="Chinese (Mandarin)_Cute_Spirit">中文 (普通话) - 憨憨萌兽</option>
+                <option value="Chinese (Mandarin)_Radio_Host">中文 (普通话) - 电台男主播</option>
+                <option value="Chinese (Mandarin)_Straightforward_Boy">中文 (普通话) - 率真弟弟</option>
+                <option value="Chinese (Mandarin)_Sincere_Adult">中文 (普通话) - 真诚青年</option>
+                <option value="Chinese (Mandarin)_Gentle_Senior">中文 (普通话) - 温柔学姐</option>
+                <option value="Chinese (Mandarin)_Stubborn_Friend">中文 (普通话) - 嘴硬竹马</option>
+                <option value="Chinese (Mandarin)_Crisp_Girl">中文 (普通话) - 清脆少女</option>
+                <option value="Chinese (Mandarin)_Pure-hearted_Boy">中文 (普通话) - 清澈邻家弟弟</option>
+                <option value="Chinese (Mandarin)_Soft_Girl">中文 (普通话) - 柔和少女</option>
+                <option value="Cantonese_ProfessionalHost（F）">中文 (粤语) - 专业女主持</option>
+                <option value="Cantonese_GentleLady">中文 (粤语) - 温柔女声</option>
+                <option value="Cantonese_ProfessionalHost（M）">中文 (粤语) - 专业男主持</option>
+                <option value="Cantonese_PlayfulMan">中文 (粤语) - 活泼男声</option>
+                <option value="Cantonese_CuteGirl">中文 (粤语) - 可爱女孩</option>
+                <option value="Cantonese_KindWoman">中文 (粤语) - 善良女声</option>
+                <option value="English_Graceful_Lady">英文 - Graceful Lady</option>
+                <option value="English_Insightful_Speaker">英文 - Insightful Speaker</option>
+                <option value="English_radiant_girl">英文 - Radiant Girl</option>
+                <option value="English_Persuasive_Man">英文 - Persuasive Man</option>
+                <option value="English_Lucky_Robot">英文 - Lucky Robot</option>
+                <option value="English_Trustworthy_Man">英文 - Trustworthy Man</option>
+                <option value="English_Aussie_Bloke">英文 - Aussie Bloke</option>
+                <option value="English_Whispering_girl">英文 - Whispering Girl</option>
+                <option value="English_Diligent_Man">英文 - Diligent Man</option>
+                <option value="English_Gentle-voiced_man">英文 - Gentle-voiced Man</option>
+                <option value="Japanese_Whisper_Belle">日文 - Whisper Belle</option>
+                <option value="Japanese_IntellectualSenior">日文 - Intellectual Senior</option>
+                <option value="Japanese_DecisivePrincess">日文 - Decisive Princess</option>
+                <option value="Japanese_LoyalKnight">日文 - Loyal Knight</option>
+                <option value="Japanese_DominantMan">日文 - Dominant Man</option>
+                <option value="Korean_SweetGirl">韩文 - Sweet Girl</option>
+                <option value="Korean_CheerfulBoyfriend">韩文 - Cheerful Boyfriend</option>
+                <option value="Korean_EnchantingSister">韩文 - Enchanting Sister</option>
+                <option value="Korean_ShyGirl">韩文 - Shy Girl</option>
+                <option value="Korean_ReliableSister">韩文 - Reliable Sister</option>
+                <option value="Spanish_SereneWoman">西班牙文 - Serene Woman</option>
+                <option value="Spanish_MaturePartner">西班牙文 - Mature Partner</option>
+                <option value="Spanish_CaptivatingStoryteller">西班牙文 - Captivating Storyteller</option>
+                <option value="Spanish_Narrator">西班牙文 - Narrator</option>
+                <option value="French_Female_News Anchor">法文 - Patient Female Presenter</option>
+                <option value="French_CasualMan">法文 - Casual Man</option>
+                <option value="French_MovieLeadFemale">法文 - Movie Lead Female</option>
+              </select>
+            </label>
+            <label>语言增强
+              <select name="language_boost">
+                <option value="">默认（不增强）</option>
+                <option value="auto">auto（自动识别）</option>
+                <option value="Chinese">中文普通话</option>
+                <option value="Chinese,Yue">中文粤语</option>
+                <option value="English">英语</option>
+                <option value="Japanese">日语</option>
+                <option value="Korean">韩语</option>
+                <option value="Spanish">西班牙语</option>
+                <option value="French">法语</option>
+                <option value="Portuguese">葡萄牙语</option>
+                <option value="German">德语</option>
+                <option value="Russian">俄语</option>
+                <option value="Arabic">阿拉伯语</option>
+                <option value="Turkish">土耳其语</option>
+                <option value="Dutch">荷兰语</option>
+                <option value="Ukrainian">乌克兰语</option>
+                <option value="Vietnamese">越南语</option>
+                <option value="Indonesian">印尼语</option>
+                <option value="Italian">意大利语</option>
+                <option value="Thai">泰语</option>
+                <option value="Polish">波兰语</option>
+                <option value="Romanian">罗马尼亚语</option>
+                <option value="Greek">希腊语</option>
+                <option value="Czech">捷克语</option>
+                <option value="Finnish">芬兰语</option>
+                <option value="Hindi">印地语</option>
+                <option value="Bulgarian">保加利亚语</option>
+                <option value="Danish">丹麦语</option>
+                <option value="Hebrew">希伯来语</option>
+                <option value="Malay">马来语</option>
+                <option value="Persian">波斯语</option>
+                <option value="Slovak">斯洛伐克语</option>
+                <option value="Swedish">瑞典语</option>
+                <option value="Croatian">克罗地亚语</option>
+                <option value="Filipino">菲律宾语</option>
+                <option value="Hungarian">匈牙利语</option>
+                <option value="Norwegian">挪威语</option>
+                <option value="Slovenian">斯洛文尼亚语</option>
+                <option value="Catalan">加泰罗尼亚语</option>
+                <option value="Nynorsk">新挪威语</option>
+                <option value="Tamil">泰米尔语</option>
+                <option value="Afrikaans">南非语</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-fields">
+            <label>语速
+              <input name="speed" type="number" min="0.5" max="2" step="0.1" value="1" placeholder="0.5-2，默认 1" />
+              <span class="field-hint">范围 0.5-2，越大越快</span>
+            </label>
+            <label>音量
+              <input name="vol" type="number" min="0.1" max="10" step="0.1" value="1" placeholder="0.1-10，默认 1" />
+              <span class="field-hint">范围 0.1-10，越大越响</span>
+            </label>
+            <label>语调
+              <input name="pitch" type="number" min="-12" max="12" step="1" value="0" placeholder="-12-12，默认 0" />
+              <span class="field-hint">范围 -12-12，0 为原音色</span>
+            </label>
+          </div>
+          <div class="inline-fields">
+            <label>格式
+              <select name="format">
+                <option value="mp3">mp3（默认）</option>
+                <option value="wav">wav（仅非流式）</option>
+                <option value="flac">flac</option>
+                <option value="pcm">pcm</option>
+              </select>
+              <span class="field-hint">wav 仅支持非流式输出</span>
+            </label>
+            <label>采样率 (Hz)
+              <select name="sample_rate">
+                <option value="32000">32000（默认）</option>
+                <option value="44100">44100</option>
+                <option value="24000">24000</option>
+                <option value="22050">22050</option>
+                <option value="16000">16000</option>
+                <option value="8000">8000</option>
+              </select>
+              <span class="field-hint">可选：8k/16k/22.05k/24k/32k/44.1k</span>
+            </label>
+            <label>声道
+              <select name="channel">
+                <option value="1">单声道（默认）</option>
+                <option value="2">双声道</option>
+              </select>
+              <span class="field-hint">1= 单声道，2= 双声道</span>
+            </label>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" name="subtitle_enable" /> 生成字幕</label>
+            <label><input type="checkbox" name="aigc_watermark" /> 添加音频水印</label>
+          </div>
+          <button type="submit">合成语音并保存</button>
+          <div id="speech-result" class="result" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section id="page-records" class="page" data-page-panel="records">
+        <div class="panel wide-panel">
+          <div class="panel-heading split-heading">
+            <div>
+              <p>Library</p>
+              <h2>记录管理</h2>
+            </div>
+            <button id="refresh-records" class="secondary-button small-button" type="button">刷新记录</button>
+          </div>
+          <div id="record-stats" class="stats-grid"></div>
+          <div id="records-list" class="records-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="page-settings" class="page" data-page-panel="settings">
+        <form id="settings-form" class="panel settings-panel">
+          <div class="panel-heading">
+            <p>Settings</p>
+            <h2>API Key 设置</h2>
+          </div>
+          <p id="settings-status" class="muted-text">正在读取本地设置。</p>
+          <label>MiniMax API Key
+            <input name="apiKey" type="password" autocomplete="off" placeholder="sk-..." required />
+          </label>
+          <button type="submit">保存到本地数据库</button>
+          <div id="settings-result" class="result" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
