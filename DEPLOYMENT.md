@@ -84,7 +84,7 @@ docker run -d \
 
 ## 镜像信息
 
-- 基础镜像：`node:20-alpine`
+- 基础镜像：`node:22-alpine`
 - 镜像大小：约 200MB
 - Exposed 端口：3000
 - 健康检查：每 30 秒检查一次
@@ -126,13 +126,13 @@ ports:
 
 ```dockerfile
 # 使用多阶段构建
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 COPY --from=builder /app .
 ```
