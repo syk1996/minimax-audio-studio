@@ -20,6 +20,7 @@ MiniMax 音视频创作工作台，本地网页应用，支持音乐生成、翻
 npm install
 npm run dev
 ```
+Docker部署先创建“minimax-studio.sqlite“文件
 
 访问 `http://localhost:5173`，进入「设置」页面保存 MiniMax API Key 后即可使用。
 
